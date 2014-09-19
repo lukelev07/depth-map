@@ -36,10 +36,10 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 
     int current_x;
     int current_y;
-    int x;
-    int x2;
-    int y;
-    int y2;
+    int x=0;
+    int x2=0;
+    int y=0;
+    int y2=0;
     int factor_x;
     int factor_y;
     int euc_dist_min;
@@ -52,7 +52,8 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
     //int i=feature_width+image_width*feature_height;
     //int j=(image_width*image_height-1)-image_width*feature_height-feature_width;
     int i = 0;
-	while (i != '\0') {
+	while (left[i] != '\0') {
+		//printf("entered");
 		//start comparing with other factors inside the box on the right image
 
 		current_x = i % image_width;
@@ -63,7 +64,7 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 		//TODO maybe remove first half or OR?
 		if (current_x-maximum_displacement < 0 || current_x-feature_width < 0) {
 			//big green box sticks over left edge
-			x=feature_width+1;
+			x=feature_width;
 		}
 		if (current_x+maximum_displacement > image_width-1 || current_x+feature_width > image_width-1) {
 			//green box sticks over right edge
@@ -71,7 +72,7 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 		}
 		if (current_y-maximum_displacement < 0 || current_y-feature_height < 0) {
 			//green box above top edge
-			y=feature_height+1;
+			y=feature_height;
 		}
 		if (current_y+maximum_displacement > image_height -1 || current_y+feature_height > image_height -1) {
 			//green box below bottom edge
@@ -119,6 +120,7 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 			}
 			y++;
 		}
+		printf("look at best x and y and euc_dist_min\n");
 		i++;
 	}
 }
