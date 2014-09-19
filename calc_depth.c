@@ -31,23 +31,75 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
     }
 
     // calculate parameters to build feature
-    int h_factor_pos = (feature_width - 1)/2; //add or subtract these from current_pixel
-    int h_factor_neg = (feature_width - 1)/2 + feature_width % 2; //in case it's even
-    int v_factor_pos = (feature_height -1)/2;
-    int v_factor_neg = (feature_height -1)/2 + feature_height %2;
-
     //calculate parameters to build displacement box on right image
-    int box_width = 2(feature_width) + 1;
-    int box_height = 2(feature_height) + 1
-    int disp_h_factor_pos = ((i % box_width) -1)/2;
-    int disp_h_factor_neg = ((i % box_width) -1)/2 + feature_width % 2;
-    int disp_v_factor_pos = ((i % box_height) -1)/2;
-    int disp_v_factor_neg = ((i % box_height) -1)/2 + feature_height % 2;
+    int box_dim = 2(maximum_displacement) + 1;
 
+    int current_x;
+    int current_y;
+    int x;
+    int y;
+    int factor_x;
+    int factor_y;
+    int euc_dist_min;
+    int euc_index;
 
-	while (left[i] != '\0') {
+    int i=feature_width+image_width*feature_height;
+    int j=(image_width*image_height-1)-image_width*feature_height-feature_width;
+	while (i <= j) {
 		//start comparing with other factors inside the box on the right image
+		if (i == '\0') {
+			printf("wat, got to end\n");
+		}
+		current_x = i % image_width;
+		current_y = (i-current_x)/image_width;
+		
+		//x+y*width=i
 
+		if (current_x-feature_width-maximum_displacement < 0) {
+			//big green box sticks over left edge
+			x=(maximum_displacement)
+		}
+		if (current_x+feature_width+maximum_displacement > image_width-1) {
+			//green box sticks over right edge
+		}
+		if (current_y-feature_width-maximum_displacement < 0) {
+			//green box above top edge
+		}
+		if (current_y+feature_height+maximum_displacement > image_height -1) {
+			//green box below bottom edge
+		}
+
+		//iterate on y from y=current_y+half_feature to current_y+max_disp-half_feature
+		//iterate on x from x=current_x+half_feature to current_x + max_disp - half_feature
+		else {
+			x=current_x+h_factor_neg-(box_dim-1)/2;
+			y=current_y+v_factor_neg-(box_dim-1)/2;
+		}
+		while (y < current_y-v_factor_pos+(box_dim-1)/2){
+			while (x < current_x-h_factor_pos+(box_dim-1)/2) {
+				//iterate through factor and contribute these values to the euclidian distance
+				factor_x = current_x;
+				factor_y = current_y;
+				
+				while (factor_y < y+v_factor_pos) {
+					while (factor_x < x+h_factor_pos) {
+						euc_pixel = factor_x+factor_y*image_width;
+						euc_index += (left[euc_pixel]-right[euc_pixel])*(left[euc_pixel]-right[euc_pixel]);
+						factor_x++;
+					}
+					factor_y++;
+				}
+				if (euc_index < euc_dist_min) {
+					euc_dist_min=euc_index;
+				}
+				x++;
+			}
+			y++;
+		}
+		i++;
 	}
 }
 
+// function idea
+//returns array of x-displacements to form the feature box around on the right image
+// x is the current pixel's x value
