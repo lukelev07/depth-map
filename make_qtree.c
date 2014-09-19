@@ -33,9 +33,13 @@ qNode *depth_to_quad(unsigned char *depth_map, int map_width) {
     // paranoid edge case 
     if (!*depth_map) {
         return NULL;
-    }
+    } 
+    // base case call helper
+    
+    // start at root check if homgenous
+    
 }
-
+// DO NOT MODIFY
 void free_qtree(qNode *qtree_node) {
     if(qtree_node) {
         if(!qtree_node->leaf){
