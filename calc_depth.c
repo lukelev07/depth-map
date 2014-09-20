@@ -9,6 +9,7 @@
 #include <math.h>
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 /* Implements the normalized displacement function */
 unsigned char normalized_displacement(int dx, int dy,
@@ -45,10 +46,10 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
     int factor_x;
     int factor_y;
     int euc_dist_min=-1;
-    int euc_index;
+    int euc_index=0;
     int euc_pixel;
     int left_pixel;
-    int euc_me;
+    int euc_me=0;
     //located closest match
     int best_x;
     int best_y;
@@ -115,6 +116,7 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 					while (factor_x <= x+2*feature_width) {
 						euc_pixel = factor_x+factor_y*image_width;
 						left_pixel= ((current_x-feature_width)+(factor_x-x))+((current_y-feature_height)+(factor_y-y))*image_width;
+						//printf("left pixel=%d right pixel=%d\n", left_pixel, euc_pixel);
 						if (x+feature_width == current_x && y+feature_height == current_y){
 							//printf("modifying euc dist\n");
 							euc_me += (left[left_pixel]-right[euc_pixel])*(left[left_pixel]-right[euc_pixel]);
@@ -129,14 +131,13 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 					factor_x=x; //reset factor_x
 				}
 				//printf("new euc calculated as %d\n", euc_index);
-				//printf("new");
-				if (euc_dist_min == -1) {
-					euc_dist_min=euc_index;
-					best_x=x+feature_width;
-					best_y=y+feature_height;
-					//printf("bestx=%d besty=%d\n", best_x, best_y);
+				if (euc_index == euc_dist_min) {
+					if (normalized_displacement(best_x-current_x, best_y-current_y, maximum_displacement) > normalized_displacement((x+feature_width)-current_x, (y+feature_height)-current_y, maximum_displacement)){
+						best_x=(x+feature_width);
+						best_y=(y+feature_height);
+					}
 				}
-				if (euc_index < euc_dist_min) {
+				if (euc_index < euc_dist_min || euc_dist_min == -1) {
 					euc_dist_min=euc_index;
 					best_x=x+feature_width;
 					best_y=y+feature_height;
@@ -156,7 +157,8 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 			best_y=current_y;
 		}
 		//printf("best match for left's x=%d y=%d is x=%d y=%d\n", current_x, current_y, best_x, best_y);
-		depth_map[i] = normalized_displacement(best_y-current_y, best_x-current_x, maximum_displacement);
+		//printf("using parameters dx=%d dy=%d\n", best_x-current_x, best_y-current_y);
+		depth_map[i] = normalized_displacement(best_x-current_x, best_y-current_y, maximum_displacement);
 		i++;
 		euc_dist_min=-1;
 		euc_me=0;
