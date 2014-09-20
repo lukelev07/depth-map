@@ -26,9 +26,9 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 
     /* YOUR CODE HERE */
     //loop through each pixel in left
-    printf("max displacement is %d\n", maximum_displacement);
+    //printf("max displacement is %d\n", maximum_displacement);
     if (feature_height > maximum_displacement || feature_width > maximum_displacement) {
-    	printf("feature height larger than displacement box\n");
+    	//printf("feature height larger than displacement box\n");
     }
 
     // calculate parameters to build feature
@@ -44,9 +44,10 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
     int y2=0;
     int factor_x;
     int factor_y;
-    int euc_dist_min=55;
+    int euc_dist_min=555555;
     int euc_index;
     int euc_pixel;
+    int euc_me;
     //located closest match
     int best_x;
     int best_y;
@@ -55,7 +56,7 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
     //int j=(image_width*image_height-1)-image_width*feature_height-feature_width;
     int i = 0;
 	while (i < image_height*image_width) {
-		//printf("entered");
+		////printf("entered");
 		//start comparing with other factors inside the box on the right image
 
 		current_x = i % (image_width);
@@ -98,13 +99,13 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 
 		best_x=current_x;
 		best_y=current_y;
-		printf("scanning features around pixel (%d,%d)\n", current_x, current_y);
-		printf("ok big green box: x %d x2 %d y %d y2 %d\n", xt, x2, y, y2);
+		//printf("scanning features around pixel (%d,%d)\n", current_x, current_y);
+		//printf("ok big green box: x %d x2 %d y %d y2 %d\n", xt, x2, y, y2);
 		//TODO just determine how far right and how far down the box needs to go from the padded x calculated up top. then no need for actually figuring out the size of the giant green box.
 		x=xt;
 		while (y <= y2){
 			while (x <= x2) {
-				printf("scanning feature whose center is (%d,%d)\n", x+feature_width, y+feature_width);
+				//printf("scanning feature whose center is (%d,%d)\n", x+feature_width, y+feature_height);
 				//iterate through factor and contribute these values to the euclidian distance
 				factor_x = x;
 				factor_y = y;
@@ -112,30 +113,45 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 				while (factor_y <= y+2*feature_height) {
 					while (factor_x <= x+2*feature_width) {
 						euc_pixel = factor_x+factor_y*image_width;
+						if (x+feature_width == current_x && y+feature_height == current_y){
+							//printf("modifying euc dist\n");
+							euc_me += (left[i]-right[euc_pixel])*(left[i]-right[euc_pixel]);
+						}
+						euc_pixel = factor_x+factor_y*image_width;
 						euc_index += (left[i]-right[euc_pixel])*(left[i]-right[euc_pixel]);
-						printf("currently (%d,%d)\n", factor_x, factor_y);
-						printf("feature width %d feature height %d\n", feature_width, feature_height);
+
+						//printf("currently (%d,%d)\n", factor_x, factor_y);
+						//printf("feature width %d feature height %d\n", feature_width, feature_height);
 						factor_x++;
 					}
 					factor_y++;
 					factor_x=x; //reset factor_x
 				}
-				printf("new euc calculated as %d\n", euc_index);
+				//printf("new euc calculated as %d\n", euc_index);
 				if (euc_index < euc_dist_min) {
 					euc_dist_min=euc_index;
 					best_x=x+feature_width;
-					best_y=y+feature_width;
+					best_y=y+feature_height;
+					//printf("bestx=%d besty=%d\n", best_x, best_y);
 				}
 				x++;
 				euc_index=0;
+				//euc_me=0;
 			}
 			y++;
 			x=xt; //reset x
 
 		}
-		printf("best match for left's x=%d y=%d is x=%d y=%d\n", current_x, current_y, best_x, best_y);
+		if (euc_dist_min==euc_me) {
+			//printf("eucdist %d\n", euc_dist_min);
+			best_x=current_x;
+			best_y=current_y;
+		}
+		//printf("best match for left's x=%d y=%d is x=%d y=%d\n", current_x, current_y, best_x, best_y);
 		depth_map[i] = normalized_displacement(best_y-current_y, best_x-current_x, maximum_displacement);
 		i++;
+		euc_dist_min=555555;
+		euc_me=0;
 	}
 }
 
