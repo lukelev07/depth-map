@@ -44,9 +44,10 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
     int y2=0;
     int factor_x;
     int factor_y;
-    int euc_dist_min=555555;
+    int euc_dist_min=-1;
     int euc_index;
     int euc_pixel;
+    int left_pixel;
     int euc_me;
     //located closest match
     int best_x;
@@ -65,33 +66,33 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 		//x+y*width=i
 		
 		//TODO maybe remove first half or OR?
-		if (current_x-maximum_displacement < 0 || current_x-feature_width < 0) {
+		if (current_x-maximum_displacement+feature_width < 0 || current_x-feature_width < 0) {
 			//big green box sticks over left edge
 			xt=feature_width;
 		}
 		else {
-			xt=current_x-maximum_displacement;
+			xt=current_x-maximum_displacement+feature_width;
 		}
-		if (current_x+maximum_displacement > image_width-1 || current_x+feature_width > image_width-1) {
+		if (current_x+maximum_displacement-feature_width > image_width-1 || current_x+feature_width > image_width-1) {
 			//green box sticks over right edge
 			x2=feature_width+image_width-1;
 		}
 		else{
-			x2=current_x+maximum_displacement-2*feature_width;
+			x2=current_x+maximum_displacement-feature_width-2*feature_width;
 		}
-		if (current_y-maximum_displacement < 0 || current_y-feature_height < 0) {
+		if (current_y-maximum_displacement+feature_height < 0 || current_y-feature_height < 0) {
 			//green box above top edge
 			y=feature_height;
 		}
 		else{
-			y=current_y-maximum_displacement;
+			y=current_y-maximum_displacement+feature_height;
 		}
-		if (current_y+maximum_displacement > image_height -1 || current_y+feature_height > image_height -1) {
+		if (current_y+maximum_displacement-feature_height > image_height -1 || current_y+feature_height > image_height -1) {
 			//green box below bottom edge
 			y2=feature_height+image_height-1;
 		}
 		else{
-			y2=current_y+maximum_displacement-2*feature_height;
+			y2=current_y+maximum_displacement-feature_height-2*feature_height;
 		}
 
 		//iterate on y from y=current_y+half_feature to current_y+max_disp-half_feature
@@ -113,12 +114,12 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 				while (factor_y <= y+2*feature_height) {
 					while (factor_x <= x+2*feature_width) {
 						euc_pixel = factor_x+factor_y*image_width;
+						left_pixel= ((current_x-feature_width)+(factor_x-x))+((current_y-feature_height)+(factor_y-y))*image_width;
 						if (x+feature_width == current_x && y+feature_height == current_y){
 							//printf("modifying euc dist\n");
-							euc_me += (left[i]-right[euc_pixel])*(left[i]-right[euc_pixel]);
+							euc_me += (left[left_pixel]-right[euc_pixel])*(left[left_pixel]-right[euc_pixel]);
 						}
-						euc_pixel = factor_x+factor_y*image_width;
-						euc_index += (left[i]-right[euc_pixel])*(left[i]-right[euc_pixel]);
+						euc_index += (left[left_pixel]-right[euc_pixel])*(left[left_pixel]-right[euc_pixel]);
 
 						//printf("currently (%d,%d)\n", factor_x, factor_y);
 						//printf("feature width %d feature height %d\n", feature_width, feature_height);
@@ -128,6 +129,13 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 					factor_x=x; //reset factor_x
 				}
 				//printf("new euc calculated as %d\n", euc_index);
+				//printf("new");
+				if (euc_dist_min == -1) {
+					euc_dist_min=euc_index;
+					best_x=x+feature_width;
+					best_y=y+feature_height;
+					//printf("bestx=%d besty=%d\n", best_x, best_y);
+				}
 				if (euc_index < euc_dist_min) {
 					euc_dist_min=euc_index;
 					best_x=x+feature_width;
@@ -150,7 +158,7 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 		//printf("best match for left's x=%d y=%d is x=%d y=%d\n", current_x, current_y, best_x, best_y);
 		depth_map[i] = normalized_displacement(best_y-current_y, best_x-current_x, maximum_displacement);
 		i++;
-		euc_dist_min=555555;
+		euc_dist_min=-1;
 		euc_me=0;
 	}
 }
