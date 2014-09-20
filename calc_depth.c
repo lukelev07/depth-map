@@ -28,9 +28,6 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
     /* YOUR CODE HERE */
     //loop through each pixel in left
     //printf("max displacement is %d\n", maximum_displacement);
-    if (feature_height > maximum_displacement || feature_width > maximum_displacement) {
-    	//printf("feature height larger than displacement box\n");
-    }
 
     // calculate parameters to build feature
     //calculate parameters to build displacement box on right image
@@ -67,33 +64,33 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 		//x+y*width=i
 		
 		//TODO maybe remove first half or OR?
-		if (current_x-maximum_displacement+feature_width < 0 || current_x-feature_width < 0) {
+		if (current_x-maximum_displacement < 0) {
 			//big green box sticks over left edge
-			xt=feature_width;
+			xt=0;
 		}
 		else {
-			xt=current_x-maximum_displacement+feature_width;
+			xt=current_x-maximum_displacement;
 		}
-		if (current_x+maximum_displacement-feature_width > image_width-1 || current_x+feature_width > image_width-1) {
+		if (current_x+maximum_displacement+2*feature_width > image_width-1) {
 			//green box sticks over right edge
-			x2=feature_width+image_width-1;
+			x2=image_width-1-2*feature_width;
 		}
 		else{
-			x2=current_x+maximum_displacement-feature_width-2*feature_width;
+			x2=current_x+maximum_displacement-2*feature_width;
 		}
-		if (current_y-maximum_displacement+feature_height < 0 || current_y-feature_height < 0) {
+		if (current_y-maximum_displacement < 0) {
 			//green box above top edge
-			y=feature_height;
+			y=0;
 		}
 		else{
-			y=current_y-maximum_displacement+feature_height;
+			y=current_y-maximum_displacement;
 		}
-		if (current_y+maximum_displacement-feature_height > image_height -1 || current_y+feature_height > image_height -1) {
+		if (current_y+maximum_displacement+2*feature_height > image_height -1) {
 			//green box below bottom edge
-			y2=feature_height+image_height-1;
+			y2=image_height-1-2*feature_height;
 		}
 		else{
-			y2=current_y+maximum_displacement-feature_height-2*feature_height;
+			y2=current_y+maximum_displacement-2*feature_height;
 		}
 
 		//iterate on y from y=current_y+half_feature to current_y+max_disp-half_feature
@@ -103,6 +100,12 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 		best_y=current_y;
 		//printf("scanning features around pixel (%d,%d)\n", current_x, current_y);
 		//printf("ok big green box: x %d x2 %d y %d y2 %d\n", xt, x2, y, y2);
+		if (current_x<feature_width || current_y<feature_height || current_x>(image_width-1)-feature_width || current_y>(image_height-1)-feature_height){
+			////printf("yeah\n");
+			depth_map[i]=0;
+			i++;
+			continue;
+		}
 		//TODO just determine how far right and how far down the box needs to go from the padded x calculated up top. then no need for actually figuring out the size of the giant green box.
 		x=xt;
 		while (y <= y2){
