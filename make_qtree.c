@@ -13,6 +13,8 @@
 #define ABS(x) (((x) < 0) ? (-(x)) : (x))
 #define NON_LEAF 256
 
+// TODO: Keep track of coords
+
 int homogenous(unsigned char *depth_map, int map_width, int x, int y, int section_width) {
     // declare range of iteration through memory
     int range = section_width * section_width;
@@ -20,7 +22,7 @@ int homogenous(unsigned char *depth_map, int map_width, int x, int y, int sectio
     int hue = depth_map[start];
 
     // begin search for same val
-    for (int i = start; i < range - 1; i++) {
+    for (int i = start; i < range; i++) {
         if (!(depth_map[i] == hue)) {
             return NON_LEAF;
         }
@@ -39,7 +41,7 @@ qNode *quad_help(unsigned char *quadrant, int quad_width, int x, int y) {
         leaf->size = quad_width;
         leaf->x = x;
         leaf->y = y;
-        leaf->gray_value = quadrant[0];
+        leaf->gray_value = homogenous(quadrant, quad_width, x, y, quad_width);
         (*leaf).child_NW = NULL;
         (*leaf).child_NE = NULL;
         (*leaf).child_SE = NULL;
@@ -54,9 +56,9 @@ qNode *quad_help(unsigned char *quadrant, int quad_width, int x, int y) {
         branch->y = y;
         branch->gray_value = NON_LEAF;
         (*branch).child_NW = quad_help(quadrant, quad_width / 2, 0, 0);
-        (*branch).child_NE = quad_help(quadrant, quad_width / 2, (quad_width / 2), 0);
-        (*branch).child_SE = quad_help(quadrant, quad_width / 2, (quad_width / 2), (quad_width / 2));
-        (*branch).child_SW = quad_help(quadrant, quad_width / 2, 0, (quad_width / 2));
+        (*branch).child_NE = quad_help(quadrant, quad_width / 2, quad_width / 2, 0);
+        (*branch).child_SE = quad_help(quadrant, quad_width / 2, quad_width / 2, quad_width / 2);
+        (*branch).child_SW = quad_help(quadrant, quad_width / 2, 0, quad_width / 2);
         return branch;
     }
 }
@@ -64,6 +66,7 @@ qNode *quad_help(unsigned char *quadrant, int quad_width, int x, int y) {
 qNode *depth_to_quad(unsigned char *depth_map, int map_width) {
     // paranoid edge case 
     // base case call helper
+
     return quad_help(depth_map, map_width, 0, 0);
 }
 
