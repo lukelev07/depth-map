@@ -21,13 +21,17 @@ int homogenous(unsigned char *depth_map, int map_width, int x, int y, int sectio
     int start = x + (y * map_width);
     int hue = depth_map[start];
 
-    // begin search for same val
-    for (int i = start; i < range; i++) {
+    int i = start;
+    while (i < range) {
         if (!(depth_map[i] == hue)) {
             return NON_LEAF;
         }
+        if (i == section_width - 1) {
+            i = i + (map_width - section_width) + 1;
+        } else {
+            i++;
+        }
     }
-    // they must all be the same return the original hue
     return hue;
 }
 
@@ -36,29 +40,42 @@ qNode *quad_help(unsigned char *quadrant, int quad_width, int x, int y, int sect
     if (homogenous(quadrant, quad_width, x, y, section_width) != NON_LEAF) {
         // base case assign leaf node and NULL children pointers
         qNode *leaf = (qNode *)malloc(sizeof(qNode));
+        if (leaf == NULL) {
+            exit(0);
+        }
         // set traits of LEAF
         leaf->leaf = 1;
         leaf->size = section_width;
         leaf->x = x;
         leaf->y = y;
         leaf->gray_value = homogenous(quadrant, quad_width, x, y, section_width);
+
+        // leaf node has no children
         (*leaf).child_NW = NULL;
         (*leaf).child_NE = NULL;
         (*leaf).child_SE = NULL;
         (*leaf).child_SW = NULL;
+
         return leaf;
     } else {
         qNode *branch = (qNode *)malloc(sizeof(qNode));
+        if (branch == NULL) {
+            exit(0);
+        }
         // set traits of NON_LEAF
         branch->leaf = 0;
         branch->size = section_width;
         branch->x = x;
         branch->y = y;
         branch->gray_value = homogenous(quadrant, quad_width, x, y, section_width);
-        (*branch).child_NW = quad_help(quadrant, quad_width, 0, 0, section_width/2);
-        (*branch).child_NE = quad_help(quadrant, quad_width, quad_width - section_width, 0, section_width/2);
-        (*branch).child_SE = quad_help(quadrant, quad_width, quad_width - section_width, quad_width - section_width, section_width/2);
-        (*branch).child_SW = quad_help(quadrant, quad_width, 0, quad_width - section_width, section_width/2);
+
+        // recursive calls
+        (*branch).child_NW = quad_help(quadrant, quad_width, x, y, section_width/2);
+        (*branch).child_NE = quad_help(quadrant, quad_width, x + section_width/2, y, section_width/2);
+        (*branch).child_SE = quad_help(quadrant, quad_width, x + section_width/2, y + section_width/2, section_width/2);
+        (*branch).child_SW = quad_help(quadrant, quad_width, x, y + section_width/2, section_width/2);
+
+        // return final branch
         return branch;
     }
 }
