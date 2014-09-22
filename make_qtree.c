@@ -13,8 +13,6 @@
 #define ABS(x) (((x) < 0) ? (-(x)) : (x))
 #define NON_LEAF 256
 
-// TODO: Keep track of coords
-
 int homogenous(unsigned char *depth_map, int map_width, int x, int y, int section_width) {
     // declare range of iteration through memory
     int start = x + (y * map_width);
@@ -32,17 +30,6 @@ int homogenous(unsigned char *depth_map, int map_width, int x, int y, int sectio
         j++;
     }
     return hue;
-   /* int i = start;
-    while (i < range) {
-        if (!(depth_map[i] == hue)) {
-            return NON_LEAF;
-        }
-        if (i == section_width - 1) {
-            i = i + (map_width - section_width) + 1;
-        } else {
-            i++;
-        }
-    } */
 }
 
 qNode *quad_help(unsigned char *quadrant, int quad_width, int x, int y, int section_width) {
@@ -65,7 +52,6 @@ qNode *quad_help(unsigned char *quadrant, int quad_width, int x, int y, int sect
         (*leaf).child_NE = NULL;
         (*leaf).child_SE = NULL;
         (*leaf).child_SW = NULL;
-
         return leaf;
     } else {
         qNode *branch = (qNode *)malloc(sizeof(qNode));
@@ -84,14 +70,11 @@ qNode *quad_help(unsigned char *quadrant, int quad_width, int x, int y, int sect
         (*branch).child_NE = quad_help(quadrant, quad_width, x + section_width/2, y, section_width/2);
         (*branch).child_SE = quad_help(quadrant, quad_width, x + section_width/2, y + section_width/2, section_width/2);
         (*branch).child_SW = quad_help(quadrant, quad_width, x, y + section_width/2, section_width/2);
-
-        // return final branch
         return branch;
     }
 }
 
 qNode *depth_to_quad(unsigned char *depth_map, int map_width) {
-    // paranoid edge case 
     // base case call helper
     return quad_help(depth_map, map_width, 0, 0, map_width);
 }
