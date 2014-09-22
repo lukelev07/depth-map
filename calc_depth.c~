@@ -87,7 +87,7 @@ void calc_depth(unsigned char *depth_map, unsigned char *left,
 		}
 		if (current_y+maximum_displacement+feature_height > image_height -1) {
 			//green box below bottom edge
-			y2=image_height-1-2*feature_height;
+			y2=image_height-1-feature_height;
 		}
 		else{
 			y2=current_y+maximum_displacement-feature_height;
