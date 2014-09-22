@@ -4,5 +4,5 @@ Fill in your answers here.
 
 2. These are mostly caused by smudges on the window, it seems.  In fact, there is a really cool spot to the left-below of the note where you can clearly see the smudge in real2-left and real2-right on the window, which then translates to a "close" value on the depth map!
 
-3. Because the image is so low-resolution, using a large feature size is a bad idea because it creates a less accurate depth map.  This can be seen comparing -0.bmp to -3.bmp, where the c is much thinner and the A has the hole in the top filled in.  The pixel depths are set for larger features, meaning more "averaged" matches of nearby pixels.  Because the feature width is so "large" compared to the details of the image, the depth map's pixels get set to average euclidian distance values over a larger area.
+3.
 
