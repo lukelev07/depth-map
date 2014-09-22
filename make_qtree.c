@@ -17,11 +17,22 @@
 
 int homogenous(unsigned char *depth_map, int map_width, int x, int y, int section_width) {
     // declare range of iteration through memory
-    int range = section_width * section_width;
     int start = x + (y * map_width);
     int hue = depth_map[start];
+    int i = 0, j = 0;
 
-    int i = start;
+    while (j < section_width) {
+        while (i < section_width) {
+            if (depth_map[(x + i) + ((y + j) * map_width)] != hue) {
+                return NON_LEAF;
+            }
+            i++;
+        }
+        i = 0;
+        j++;
+    }
+    return hue;
+   /* int i = start;
     while (i < range) {
         if (!(depth_map[i] == hue)) {
             return NON_LEAF;
@@ -31,8 +42,7 @@ int homogenous(unsigned char *depth_map, int map_width, int x, int y, int sectio
         } else {
             i++;
         }
-    }
-    return hue;
+    } */
 }
 
 qNode *quad_help(unsigned char *quadrant, int quad_width, int x, int y, int section_width) {
